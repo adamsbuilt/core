@@ -120,6 +120,7 @@ class Adapter {
 	 * @param $input array the key=>value pairs to insert into the db row
 	 * @param $compare array columns that should be compared
 	 * @return int the number of rows affected by the operation
+	 * @throws \Exception
 	 */
 	public function upsert($table, $input, $compare = null) {
 		$this->conn->beginTransaction();
@@ -132,7 +133,7 @@ class Adapter {
 
 		// Construct the update query
 		$updateQuery = 'UPDATE `' . $table . '` SET ';
-		$updateQuery .= '`' . implode('`  = ?, `', array_keys($input)) . '` = ?  WHERE';
+		$updateQuery .= '`' . implode('`  = ?, `', array_keys($input)) . '` = ?  WHERE ';
 		$updateParams = array_values($input);
 		foreach ($compare as $key) {
 			$updateQuery .= '`' . $key . '`';
@@ -146,8 +147,10 @@ class Adapter {
 		// Remove the last ' AND ' from the query
 		$updateQuery = substr($updateQuery, 0, strlen($updateQuery) - 5);
 
+		$rows = 0;
 		$count = 0;
 		$maxTry = 10;
+		$failedFromException = false;
 		while(!$done && $count < $maxTry) {
 			// Try to update
 			try {
@@ -157,6 +160,8 @@ class Adapter {
 				if($e->getErrorCode() == 1213) {
 					$count++;
 					continue;
+				} else {
+					$failedFromException = $e;
 				}
 			}
 			if($rows > 0) {
@@ -167,6 +172,7 @@ class Adapter {
 				$this->conn->beginTransaction();
 				try {
 					$rows = $this->conn->insert($table, $input);
+					\OC::$server->getLogger()->error($rows);
 					$done = $rows > 0;
 				} catch (UniqueConstraintViolationException $e) {
 					// Catch the unique violation and try the loop again
@@ -176,7 +182,10 @@ class Adapter {
 			}
 		}
 
-		if($count === $maxTry) {
+		// Pass through failures correctly
+		if($failedFromException instanceof \Exception) {
+			throw $e;
+		} else if($count === $maxTry) {
 			throw new \RuntimeException("DB upsert failed after $maxTry attempts. Query $updateQuery");
 		}
 
