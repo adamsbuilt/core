@@ -28,13 +28,13 @@ namespace OC\AppFramework\Middleware\Security;
 use OC\AppFramework\Middleware\Security\Exceptions\SecurityException;
 use OC\AppFramework\Utility\ControllerMethodReflector;
 use OC\Authentication\Exceptions\PasswordLoginForbiddenException;
-use OC\User\Session;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\Response;
 use OCP\AppFramework\Middleware;
 use OCP\IRequest;
+use OCP\IUserSession;
 
 /**
  * This middleware sets the correct CORS headers on a response if the
@@ -55,7 +55,7 @@ class CORSMiddleware extends Middleware {
 	private $reflector;
 
 	/**
-	 * @var Session
+	 * @var IUserSession
 	 */
 	private $session;
 
@@ -66,7 +66,7 @@ class CORSMiddleware extends Middleware {
 	 */
 	public function __construct(IRequest $request,
 								ControllerMethodReflector $reflector,
-								Session $session) {
+								IUserSession $session) {
 		$this->request = $request;
 		$this->reflector = $reflector;
 		$this->session = $session;
@@ -112,15 +112,20 @@ class CORSMiddleware extends Middleware {
 	 * @return Response a Response object
 	 * @throws SecurityException
 	 */
-	public function afterController($controller, $methodName, Response $response){
+	public function afterController($controller, $methodName, Response $response, $isTest = false){
 		// only react if its a CORS request and if the request sends origin and
+		$userId = null;
+		if ($isTest === true && isset($this->request->server['PHP_AUTH_USER'])) {
+			$userId = $this->request->server['PHP_AUTH_USER'];
+		}
+		if (!is_null($this->session->getUser())) {
+			$userId = $this->session->getUser()->getUID();
+		}
 
 		if(isset($this->request->server['HTTP_ORIGIN']) &&
-		    isset($this->request->server['PHP_AUTH_USER']) &&
-			$this->reflector->hasAnnotation('CORS')) {
+			$this->reflector->hasAnnotation('CORS') && !is_null($userId)) {
 
 			$requesterDomain = $this->request->server['HTTP_ORIGIN'];
-			$userId = $this->request->server['PHP_AUTH_USER'];
 			\OC_Response::setCorsHeaders($userId, $requesterDomain, $response);
 
 			// allow credentials headers must not be true or CSRF is possible

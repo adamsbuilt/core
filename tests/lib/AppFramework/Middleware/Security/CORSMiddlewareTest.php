@@ -69,7 +69,7 @@ class CORSMiddlewareTest extends \Test\TestCase {
 		$this->reflector->reflect($this, __FUNCTION__);
 		$middleware = new CORSMiddleware($request, $this->reflector, $this->session);
 
-		$response = $middleware->afterController($this, __FUNCTION__, new Response());
+		$response = $middleware->afterController($this, __FUNCTION__, new Response(), true);
 		$headers = $response->getHeaders();
 		$this->assertEquals('http://www.test.com', $headers['Access-Control-Allow-Origin']);
 
@@ -134,7 +134,7 @@ class CORSMiddlewareTest extends \Test\TestCase {
 
 		$response = new Response();
 		$response->addHeader('AcCess-control-Allow-Credentials ', 'TRUE');
-		$middleware->afterController($this, __FUNCTION__, $response);
+		$middleware->afterController($this, __FUNCTION__, $response, true);
 	}
 
 	/**
