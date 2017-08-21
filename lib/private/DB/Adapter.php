@@ -6,6 +6,7 @@
  * @author Morris Jobke <hey@morrisjobke.de>
  * @author Robin Appelman <icewind@owncloud.com>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
+ * @author Tom Needham <tom@owncloud.com>
  *
  * @copyright Copyright (c) 2017, ownCloud GmbH
  * @license AGPL-3.0
@@ -150,7 +151,7 @@ class Adapter {
 		$rows = 0;
 		$count = 0;
 		$maxTry = 10;
-		$failedFromException = false;
+
 		while(!$done && $count < $maxTry) {
 			// Try to update
 			try {
@@ -161,7 +162,8 @@ class Adapter {
 					$count++;
 					continue;
 				} else {
-					$failedFromException = $e;
+					// We should catch other exceptions up the stack
+					throw $e;
 				}
 			}
 			if($rows > 0) {
@@ -172,21 +174,19 @@ class Adapter {
 				$this->conn->beginTransaction();
 				try {
 					$rows = $this->conn->insert($table, $input);
-					\OC::$server->getLogger()->error($rows);
 					$done = $rows > 0;
 				} catch (UniqueConstraintViolationException $e) {
 					// Catch the unique violation and try the loop again
 					$count++;
 				}
+				// Other exceptions are not caught, they should be caught up the stack
 				$this->conn->commit();
 			}
 		}
 
 		// Pass through failures correctly
-		if($failedFromException instanceof \Exception) {
-			throw $e;
-		} else if($count === $maxTry) {
-			throw new \RuntimeException("DB upsert failed after $maxTry attempts. Query $updateQuery");
+		if($count === $maxTry) {
+			throw new \RuntimeException("DB upsert failed after $maxTry attempts. Query: $updateQuery");
 		}
 
 		$this->conn->commit();
