@@ -24,7 +24,6 @@ use OCP\AppFramework\Http\JSONResponse;
 use OCP\ILogger;
 use OCP\IRequest;
 use OCP\IURLGenerator;
-use OCP\IUserSession;
 use OCP\IConfig;
 
 /**
@@ -61,6 +60,7 @@ class CorsController extends Controller {
 								IConfig $config) {
 		parent::__construct($AppName, $request);
 
+		$this->AppName = $AppName;
 		$this->config = $config;
 		$this->userId = $UserId;
 		$this->logger = $logger;
@@ -74,7 +74,12 @@ class CorsController extends Controller {
 	 */
 	public function getDomains() {
 		$userId = $this->userId;
-		$domains = explode(",", $this->config->getUserValue($userId, 'core', 'domains'));
+
+		if (empty($this->config->getUserValue($userId, 'core', 'domains'))) {
+			$domains = [];
+		} else {
+			$domains = explode(",", $this->config->getUserValue($userId, 'core', 'domains'));
+		}
 
 		return new JSONResponse($domains);
 	}
@@ -110,7 +115,8 @@ class CorsController extends Controller {
 		$domainsString = implode(",", $domains);
 
 		$this->config->setUserValue($userId, 'core', 'domains', $domainsString);
-		$this->logger->debug('The domain "' . $domain . '" has been white-listed.', ['app' => 'core']);
+
+		$this->logger->debug('The domain "' . $domain . '" has been white-listed.', ['app' => $this->appName]);
 
 		return new RedirectResponse(
 			$this->urlGenerator->linkToRouteAbsolute(
@@ -130,15 +136,20 @@ class CorsController extends Controller {
 	public function removeDomain($id) {
 		$userId = $this->userId;
 		$domains = explode(",", $this->config->getUserValue($userId, 'core', 'domains'));
-		unset($domains[$id]);
 
-		$this->config->setUserValue($userId, 'core', 'domains', implode(",", $domains));
+		if ($id < 0 || $id >= count($domains)) {
+			$this->logger->error("Invalid domain ID passed for deletion");
+		} else {
+			unset($domains[$id]);
+			$this->config->setUserValue($userId, 'core', 'domains', implode(",", $domains));
+		}
 
 		return new RedirectResponse(
 			$this->urlGenerator->linkToRouteAbsolute(
 				'settings.SettingsPage.getPersonal',
 				['sectionid' => 'security']
-			) . '#cors');
+			) . '#cors'
+		);
 	}
 
 	/**
