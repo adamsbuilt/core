@@ -73,54 +73,54 @@ $OCSShare = new \OCA\Files_Sharing\API\OCSShareWrapper();
 API::register('get',
 		'/apps/files_sharing/api/v1/shares',
 		[$OCSShare, 'getAllShares'],
-		'files_sharing');
+		'files_sharing', API::USER_AUTH, [], [], true);
 
 API::register('post',
 		'/apps/files_sharing/api/v1/shares',
 		[$OCSShare, 'createShare'],
-		'files_sharing');
+		'files_sharing', API::USER_AUTH, [], [], true);
 
 API::register('get',
 		'/apps/files_sharing/api/v1/shares/{id}',
 		[$OCSShare, 'getShare'],
-		'files_sharing');
+		'files_sharing', API::USER_AUTH, [], [], true);
 
 API::register('put',
 		'/apps/files_sharing/api/v1/shares/{id}',
 		[$OCSShare, 'updateShare'],
-		'files_sharing');
+		'files_sharing', API::USER_AUTH, [], [], true);
 
 API::register('delete',
 		'/apps/files_sharing/api/v1/shares/{id}',
 		[$OCSShare, 'deleteShare'],
-		'files_sharing');
+		'files_sharing', API::USER_AUTH, [], [], true);
 
 API::register('get',
 		'/apps/files_sharing/api/v1/remote_shares',
 		['\OCA\Files_Sharing\API\Remote', 'getShares'],
-		'files_sharing');
+		'files_sharing', API::USER_AUTH, [], [], true);
 
 API::register('get',
 		'/apps/files_sharing/api/v1/remote_shares/pending',
 		['\OCA\Files_Sharing\API\Remote', 'getOpenShares'],
-		'files_sharing');
+		'files_sharing', API::USER_AUTH, [], [], true);
 
 API::register('post',
 		'/apps/files_sharing/api/v1/remote_shares/pending/{id}',
 		['\OCA\Files_Sharing\API\Remote', 'acceptShare'],
-		'files_sharing');
+		'files_sharing', API::USER_AUTH, [], [], true);
 
 API::register('delete',
 		'/apps/files_sharing/api/v1/remote_shares/pending/{id}',
 		['\OCA\Files_Sharing\API\Remote', 'declineShare'],
-		'files_sharing');
+		'files_sharing', API::USER_AUTH, [], [], true);
 
 API::register('get',
 		'/apps/files_sharing/api/v1/remote_shares/{id}',
 		['\OCA\Files_Sharing\API\Remote', 'getShare'],
-		'files_sharing');
+		'files_sharing', API::USER_AUTH, [], [], true);
 
 API::register('delete',
 		'/apps/files_sharing/api/v1/remote_shares/{id}',
 		['\OCA\Files_Sharing\API\Remote', 'unshare'],
-		'files_sharing');
+		'files_sharing', API::USER_AUTH, [], [], true);
