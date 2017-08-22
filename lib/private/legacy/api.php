@@ -181,6 +181,7 @@ class OC_API {
 		}
 		$response = self::mergeResponses($responses);
 
+		// If CORS is set to active for some method, try to add CORS headers
 		if (self::$actions[$name][0]['cors']) {
 			$requesterDomain = $_SERVER['HTTP_ORIGIN'];
 			$userId = \OC::$server->getUserSession()->getUser()->getUID();
