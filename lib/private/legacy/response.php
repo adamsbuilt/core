@@ -271,19 +271,13 @@ class OC_Response {
 	/**
 	 * This function adds the CORS headers if the requester domain is white-listed
 	 */
-	public static function setCorsHeaders($userId, $domain, $response = null) {
+	public static function setCorsHeaders($userId, $domain, $response) {
 		$allowedDomains = explode(",", \OC::$server->getConfig()->getUserValue($userId, 'core', 'domains'));
 		if (in_array($domain, $allowedDomains)) {
-			if ($response != null) {
-				// TODO: infer allowed verbs from existing known routes
-				$response->addHeader("Access-Control-Allow-Origin", $domain);
-				$response->addHeader("Access-Control-Allow-Headers", "authorization, OCS-APIREQUEST, Origin, X-Requested-With, Content-Type, Access-Control-Allow-Origin");
-				$response->addHeader("Access-Control-Allow-Methods", "GET, OPTIONS, POST, PUT, DELETE, MKCOL, PROPFIND, PATCH, PROPPATCH, REPORT");
-			} else {
-				header("Access-Control-Allow-Origin: " . $domain);
-				header("Access-Control-Allow-Headers: authorization, OCS-APIREQUEST, Origin, X-Requested-With, Content-Type, Access-Control-Allow-Origin");
-				header("Access-Control-Allow-Methods: GET, OPTIONS, POST, PUT, DELETE, MKCOL, PROPFIND, PATCH, PROPPATCH, REPORT");
-			}
+			// TODO: infer allowed verbs from existing known routes
+			$response->addHeader("Access-Control-Allow-Origin", $domain);
+			$response->addHeader("Access-Control-Allow-Headers", "authorization, OCS-APIREQUEST, Origin, X-Requested-With, Content-Type, Access-Control-Allow-Origin");
+			$response->addHeader("Access-Control-Allow-Methods", "GET, OPTIONS, POST, PUT, DELETE, MKCOL, PROPFIND, PATCH, PROPPATCH, REPORT");
 		}
 		return $response;
 	}
@@ -291,19 +285,22 @@ class OC_Response {
 	/**
 	 * This function adds the CORS headers for all domains
 	 */
-	public static function setOptionsRequestHeaders($response = null) {
-		if ($response !== null) {
-			// TODO: infer allowed verbs from existing known routes
-			$response->addHeader("Access-Control-Allow-Origin", "*");
-			$response->addHeader("Access-Control-Allow-Headers", "authorization, OCS-APIREQUEST, Origin, X-Requested-With, Content-Type, Access-Control-Allow-Origin");
-			$response->addHeader("Access-Control-Allow-Methods", "GET, OPTIONS, POST, PUT, DELETE, MKCOL, PROPFIND, PATCH, PROPPATCH, REPORT");
-		} else {
-			// TODO: infer allowed verbs from existing known routes
-			header("Access-Control-Allow-Origin: *");
-			header("Access-Control-Allow-Headers: authorization, OCS-APIREQUEST, Origin, X-Requested-With, Content-Type, Access-Control-Allow-Origin");
-			header("Access-Control-Allow-Methods:  GET, OPTIONS, POST, PUT, DELETE, MKCOL, PROPFIND, PATCH, PROPPATCH, REPORT");
-		}
+	public static function setOptionsRequestHeaders($response) {
+		// TODO: infer allowed verbs from existing known routes
+		$response->addHeader("Access-Control-Allow-Origin", "*");
+		$response->addHeader("Access-Control-Allow-Headers", "authorization, OCS-APIREQUEST, Origin, X-Requested-With, Content-Type, Access-Control-Allow-Origin");
+		$response->addHeader("Access-Control-Allow-Methods", "GET, OPTIONS, POST, PUT, DELETE, MKCOL, PROPFIND, PATCH, PROPPATCH, REPORT");
+
 		return $response;
+	}
+
+	/**
+	 * @param Sabre\HTTP\ResponseInterface $response Instance of the class
+	 */
+	public static function setPhpHeaders($response) {
+		foreach ($response->getHeaders() as $key => $header) {
+			header($key . ": " . $header[0]);
+		}
 	}
 
 }
