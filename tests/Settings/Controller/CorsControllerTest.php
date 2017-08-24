@@ -54,10 +54,10 @@ class CorsControllerTest extends TestCase {
 	public function setUp() {
 		parent::setUp();
 
-		$this->request = $this->createMock('OCP\IRequest');
-		$this->logger = $this->createMock('OCP\ILogger');
-		$this->urlGenerator = $this->createMock('OCP\IURLGenerator');
-		$this->config = $this->createMock('OCP\IConfig');
+		$this->request = $this->createMock(IRequest::class);
+		$this->logger = $this->createMock(ILogger::class);
+		$this->urlGenerator = $this->createMock(IURLGenerator::class);
+		$this->config = $this->createMock(IConfig::class);
 
 		$this->corsController = new CorsController(
 			'core',

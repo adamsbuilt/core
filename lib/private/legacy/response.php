@@ -277,11 +277,11 @@ class OC_Response {
 			if ($response != null) {
 				// TODO: infer allowed verbs from existing known routes
 				$response->addHeader("Access-Control-Allow-Origin", $domain);
-				$response->addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Access-Control-Allow-Origin");
+				$response->addHeader("Access-Control-Allow-Headers", "authorization, OCS-APIREQUEST, Origin, X-Requested-With, Content-Type, Access-Control-Allow-Origin");
 				$response->addHeader("Access-Control-Allow-Methods", "GET, OPTIONS, POST, PUT, DELETE, MKCOL, PROPFIND, PATCH, PROPPATCH, REPORT");
 			} else {
 				header("Access-Control-Allow-Origin: " . $domain);
-				header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Access-Control-Allow-Origin");
+				header("Access-Control-Allow-Headers: authorization, OCS-APIREQUEST, Origin, X-Requested-With, Content-Type, Access-Control-Allow-Origin");
 				header("Access-Control-Allow-Methods: GET, OPTIONS, POST, PUT, DELETE, MKCOL, PROPFIND, PATCH, PROPPATCH, REPORT");
 			}
 		}
@@ -291,11 +291,19 @@ class OC_Response {
 	/**
 	 * This function adds the CORS headers for all domains
 	 */
-	public static function setOptionsRequestHeaders() {
-		// TODO: infer allowed verbs from existing known routes
-		header("Access-Control-Allow-Origin: *");
-		header("Access-Control-Allow-Headers: authorization, OCS-APIREQUEST, Origin, X-Requested-With, Content-Type, Access-Control-Allow-Origin");
-		header("Access-Control-Allow-Methods:  GET, OPTIONS, POST, PUT, DELETE, MKCOL, PROPFIND, PATCH, PROPPATCH, REPORT");
+	public static function setOptionsRequestHeaders($response = null) {
+		if ($response !== null) {
+			// TODO: infer allowed verbs from existing known routes
+			$response->addHeader("Access-Control-Allow-Origin", "*");
+			$response->addHeader("Access-Control-Allow-Headers", "authorization, OCS-APIREQUEST, Origin, X-Requested-With, Content-Type, Access-Control-Allow-Origin");
+			$response->addHeader("Access-Control-Allow-Methods", "GET, OPTIONS, POST, PUT, DELETE, MKCOL, PROPFIND, PATCH, PROPPATCH, REPORT");
+		} else {
+			// TODO: infer allowed verbs from existing known routes
+			header("Access-Control-Allow-Origin: *");
+			header("Access-Control-Allow-Headers: authorization, OCS-APIREQUEST, Origin, X-Requested-With, Content-Type, Access-Control-Allow-Origin");
+			header("Access-Control-Allow-Methods:  GET, OPTIONS, POST, PUT, DELETE, MKCOL, PROPFIND, PATCH, PROPPATCH, REPORT");
+		}
+		return $response;
 	}
 
 }

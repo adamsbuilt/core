@@ -112,20 +112,17 @@ class CORSMiddleware extends Middleware {
 	 * @return Response a Response object
 	 * @throws SecurityException
 	 */
-	public function afterController($controller, $methodName, Response $response, $isTest = false){
+	public function afterController($controller, $methodName, Response $response){
 		// only react if its a CORS request and if the request sends origin and
 		$userId = null;
-		if ($isTest === true && isset($this->request->server['PHP_AUTH_USER'])) {
-			$userId = $this->request->server['PHP_AUTH_USER'];
-		}
 		if (!is_null($this->session->getUser())) {
 			$userId = $this->session->getUser()->getUID();
 		}
 
-		if(isset($this->request->server['HTTP_ORIGIN']) &&
+		if($this->request->getHeader("Origin") !== null &&
 			$this->reflector->hasAnnotation('CORS') && !is_null($userId)) {
 
-			$requesterDomain = $this->request->server['HTTP_ORIGIN'];
+			$requesterDomain = $this->request->getHeader("Origin");
 			\OC_Response::setCorsHeaders($userId, $requesterDomain, $response);
 
 			// allow credentials headers must not be true or CSRF is possible

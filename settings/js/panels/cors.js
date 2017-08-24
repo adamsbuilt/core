@@ -1,16 +1,20 @@
-function removeDomain(id, token, confirmText) {
-    if (window.confirm(confirmText)) {
-        $.ajax({
-            type: 'DELETE',
-            url: OC.generateUrl('/settings/domains/{id}', {id: id}),
-            data: {
-                requesttoken: token
+function removeDomain(id, token, confirmText, callback) {
+    OC.dialogs.confirm(
+        t('settings', confirmText), t('settings','CORS'),
+        function (result) {
+            if (result) {
+                $.ajax({
+                    type: 'DELETE',
+                    url: OC.generateUrl('/settings/domains/{id}', {id: id}),
+                    data: {
+                        requesttoken: token
+                    }
+                }).success(function() {
+                    callback();
+                });
             }
-        }).success(function() {
-            // TODO: Don't do a full page reload
-            location.reload(true);
-        });
-    }
+        }, true
+    );
 }
 
 $(document).ready(function () {
@@ -18,6 +22,10 @@ $(document).ready(function () {
         var id = $(this).attr('data-id');
         var confirmText = $(this).attr('data-confirm');
         var token = OC.requestToken;
-        removeDomain(id, token, confirmText);
+        var $el = $(this);
+
+        removeDomain(id, token, confirmText, function() {
+            $el.closest('tr').remove();
+        });
 	});
 });

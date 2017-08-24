@@ -19,6 +19,8 @@ use OC\AppFramework\Middleware\Security\Exceptions\SecurityException;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\Response;
 use OC\Settings\Controller\CorsController;
+use OCP\IUserSession;
+use OCP\IUser;
 
 
 /**
@@ -40,6 +42,13 @@ class CORSMiddlewareTest extends \Test\TestCase {
 		$this->session = $this->getMockBuilder('\OC\User\Session')
 			->disableOriginalConstructor()
 			->getMock();
+
+		$user = $this->createMock(IUser::class);
+		$user->method('getUID')->willReturn('user');
+		$userSession = $this->createMock(IUserSession::class);
+		$userSession->method('getUser')->willReturn($user);
+
+		$this->fakeSession = $userSession;
 	}
 
 	/**
@@ -49,8 +58,7 @@ class CORSMiddlewareTest extends \Test\TestCase {
 		$request = new Request(
 			[
 				'server' => [
-					'HTTP_ORIGIN' => 'http://www.test.com',
-					'PHP_AUTH_USER' => 'user'
+					'HTTP_ORIGIN' => 'http://www.test.com'
 				]
 			],
 			$this->createMock('\OCP\Security\ISecureRandom'),
@@ -67,9 +75,9 @@ class CORSMiddlewareTest extends \Test\TestCase {
 		$corsController->addDomain('http://www.test.com');
 
 		$this->reflector->reflect($this, __FUNCTION__);
-		$middleware = new CORSMiddleware($request, $this->reflector, $this->session);
+		$middleware = new CORSMiddleware($request, $this->reflector, $this->fakeSession);
 
-		$response = $middleware->afterController($this, __FUNCTION__, new Response(), true);
+		$response = $middleware->afterController($this, __FUNCTION__, new Response());
 		$headers = $response->getHeaders();
 		$this->assertEquals('http://www.test.com', $headers['Access-Control-Allow-Origin']);
 
@@ -123,18 +131,17 @@ class CORSMiddlewareTest extends \Test\TestCase {
 			[
 				'server' => [
 					'HTTP_ORIGIN' => 'http://www.test.com',
-					'PHP_AUTH_USER' => 'user'
 				]
 			],
 			$this->createMock('\OCP\Security\ISecureRandom'),
 			$this->createMock('\OCP\IConfig')
 		);
 		$this->reflector->reflect($this, __FUNCTION__);
-		$middleware = new CORSMiddleware($request, $this->reflector, $this->session);
+		$middleware = new CORSMiddleware($request, $this->reflector, $this->fakeSession);
 
 		$response = new Response();
 		$response->addHeader('AcCess-control-Allow-Credentials ', 'TRUE');
-		$middleware->afterController($this, __FUNCTION__, $response, true);
+		$middleware->afterController($this, __FUNCTION__, $response);
 	}
 
 	/**

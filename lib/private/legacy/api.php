@@ -183,7 +183,7 @@ class OC_API {
 
 		// If CORS is set to active for some method, try to add CORS headers
 		if (self::$actions[$name][0]['cors']) {
-			$requesterDomain = $_SERVER['HTTP_ORIGIN'];
+			$requesterDomain = \OC::$server->getRequest()->getHeader('Origin');
 			$userId = \OC::$server->getUserSession()->getUser()->getUID();
 			\OC_Response::setCorsHeaders($userId, $requesterDomain);
 		}
