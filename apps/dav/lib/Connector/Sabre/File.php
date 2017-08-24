@@ -453,8 +453,14 @@ class File extends Node implements IFile {
 					/** @var \OC\Files\Storage\Storage $targetStorage */
 					list($partStorage, $partInternalPath) = $this->fileView->resolvePath($partFile);
 
-
 					$chunk_handler->file_assemble($partStorage, $partInternalPath);
+
+					//assembly might take a while, double check db connection is still alive
+					$conn = \OC::$server->getDatabaseConnection();
+					if ($conn->ping() === false) {
+						$conn->close();
+						$conn->connect();
+					}
 
 					if (!self::isChecksumValid($partStorage, $partInternalPath)) {
 						throw new BadRequest('The computed checksum does not match the one received from the client.');
