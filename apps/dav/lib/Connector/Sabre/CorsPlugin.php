@@ -78,14 +78,13 @@ class CorsPlugin extends \Sabre\DAV\ServerPlugin {
 		$response = \OC_Response::setOptionsRequestHeaders($response);
 		$response->setStatus(200);
 
-		// Use PHP's header() method here
-		// Because All OPTIONS requests are unauthorized, we will have to return false from here
-		// If we don't return false, due to no authorization, a 401-Unauthorized will be thrown
-		// Which we don't want here
-		\OC_Response::setPhpHeaders($response);
-
 		if ($request->getHeader('Authorization') === null) {
 			// Non-authenticated request
+			// Use PHP's header() method here
+			// Because All OPTIONS requests are unauthorized, we will have to return false from here
+			// If we don't return false, due to no authorization, a 401-Unauthorized will be thrown
+			// Which we don't want here
+			\OC_Response::setPhpHeaders($response);
 			return false;
 		}
 	}
